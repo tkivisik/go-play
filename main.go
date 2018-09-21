@@ -1,3 +1,4 @@
+// go-play is a package for playful exploration of Golang
 package main
 
 import (
