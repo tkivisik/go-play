@@ -2,11 +2,12 @@ package main
 
 import (
 	"crypto/rand"
+	"flag"
 	"fmt"
 )
 
-// binaryGuessing is a game to guess random bits
-func binaryGuessing() {
+// BinaryGuessing is a game to guess random bits
+func BinaryGuessing() {
 	var fullExpectation, tracker uint8
 	var expectation, intin int
 
@@ -34,14 +35,56 @@ func binaryGuessing() {
 		fmt.Scanln(&intin)
 
 		if intin == expectation {
-			tracker += 1 << i
+			tracker |= 1 << i
 		} else {
-			tracker += 0 << i
+			tracker |= 0 << i
 		}
 	}
 	fmt.Printf("\nFinal state: %08b\n", tracker)
 }
 
+// NumberGuessing is a game to guess random numbers.
+func NumberGuessing() {
+	var intin int
+
+	key := [100]byte{}
+	_, err := rand.Read(key[:])
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < len(key); i++ {
+		if key[i] <= 100 {
+			fmt.Println("Guess the number in range [1, 100]")
+			for {
+				fmt.Scan(&intin)
+				if intin > int(key[i]) {
+					fmt.Println("\tLower")
+				} else if intin < int(key[i]) {
+					fmt.Println("\tHigher")
+				} else {
+					fmt.Println("\tCorrect!")
+					break
+				}
+			}
+			break
+		}
+	}
+}
+
 func main() {
-	binaryGuessing()
+	var n = flag.Int("n", 1, "rounds to play")
+	var game = flag.String("game", "num", "game to play (e.g. 'num', 'bin')")
+	flag.Parse()
+
+	for i := 0; i < *n; i++ {
+		switch *game {
+		case "num":
+			NumberGuessing()
+		case "bin":
+			BinaryGuessing()
+		default:
+			fmt.Println("Pass a flag -game with either 'num' or 'bin'")
+		}
+	}
 }
