@@ -2,90 +2,41 @@
 package main
 
 import (
-	"crypto/rand"
 	"flag"
 	"fmt"
+
+	"github.com/tkivisik/go-play/games"
 )
 
-// BinaryGuessing is a game to guess random bits
-func BinaryGuessing() {
-	var fullExpectation, tracker uint8
-	var expectation, intin int
-
-	b := make([]byte, 1)
-	_, err := rand.Read(b)
-	if err != nil {
-		fmt.Println("error:", err)
-		return
-	}
-
-	fullExpectation = b[0]
-	fmt.Printf("FULL EXPECTATION: %08b\t", fullExpectation)
-	fmt.Printf("TRACKER: %08b\n\n", tracker)
-
-	for i := uint8(0); i < 8; i++ {
-		if fullExpectation&(1<<i) != 0 {
-			expectation = 1
-		} else {
-			expectation = 0
+// PrintBoard prints the current battleship board
+func PrintBoard() {
+	fmt.Println("   a b c d e f g h")
+	for i := 0; i < 8; i++ {
+		fmt.Printf("%2d", i+1)
+		for j := 0; j < 8; j++ {
+			fmt.Print(" *")
 		}
-
-		fmt.Printf("i= %d\t", i)
-		fmt.Printf("Current Expectation = %d \t", expectation)
-		fmt.Print("0 or 1? ")
-		fmt.Scanln(&intin)
-
-		if intin == expectation {
-			tracker |= 1 << i
-		} else {
-			tracker |= 0 << i
-		}
-	}
-	fmt.Printf("\nFinal state: %08b\n", tracker)
-}
-
-// NumberGuessing is a game to guess random numbers.
-func NumberGuessing() {
-	var intin int
-
-	key := [100]byte{}
-	_, err := rand.Read(key[:])
-	if err != nil {
-		panic(err)
-	}
-
-	for i := 0; i < len(key); i++ {
-		if key[i] <= 100 {
-			fmt.Println("Guess the number in range [1, 100]")
-			for {
-				fmt.Scan(&intin)
-				if intin > int(key[i]) {
-					fmt.Println("\tLower")
-				} else if intin < int(key[i]) {
-					fmt.Println("\tHigher")
-				} else {
-					fmt.Println("\tCorrect!")
-					break
-				}
-			}
-			break
-		}
+		fmt.Println()
 	}
 }
 
 func main() {
 	var n = flag.Int("n", 1, "rounds to play")
-	var game = flag.String("game", "num", "game to play (e.g. 'num', 'bin')")
+	var game = flag.String("game", "", "game to play (e.g. 'num', 'bin')")
 	flag.Parse()
+
+	PrintBoard()
 
 	for i := 0; i < *n; i++ {
 		switch *game {
 		case "num":
-			NumberGuessing()
+			games.NumberGuessing()
 		case "bin":
-			BinaryGuessing()
+			games.BinaryGuessing()
+		case "ship":
+			games.Battleship()
 		default:
-			fmt.Println("Pass a flag -game with either 'num' or 'bin'")
+			fmt.Println("Pass a flag -game with either 'num' or 'bin' or 'ship'")
 		}
 	}
 }
