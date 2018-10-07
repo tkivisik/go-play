@@ -32,7 +32,7 @@ func printLegend() {
 	for k, v := range legend {
 		fmt.Printf("%2s - %s    ", v, k)
 	}
-	fmt.Println("\n Valid point example: 'd 3'")
+	fmt.Println("\n Valid coordinate example: 'd 3'")
 	fmt.Print("\n")
 }
 
@@ -74,22 +74,22 @@ func printBoard(ships, shots map[int8]byte, enemy bool) int {
 	return hitCount
 }
 
-// pointToMap updates the shots map
-func pointToMap(p point, landscape map[int8]byte) {
-	p.number--
-	var letterIndex = uint8(strings.Index(letters, p.letter))
-	landscape[int8(p.number)] |= 1 << uint8(letterIndex)
+// coordinateToMap updates the shots map
+func coordinateToMap(p coordinate, landscape map[int8]byte) {
+	c.y--
+	var letterIndex = uint8(strings.Index(letters, c.x))
+	landscape[int8(c.y)] |= 1 << uint8(letterIndex)
 }
 
-// Point expresses a location on a map as a
-type point struct {
-	letter string
-	number int
-}
+// coordinate expresses a location on a map as a
+//type coordinate struct {
+//	x int
+//	y int
+//}
 
 // PlaceShips guides the player to place its ships
 func placeShips(random bool) map[int8]byte {
-	var p point
+	var p coordinate
 	ships := map[int8]byte{0: uint8(0)}
 	shots := map[int8]byte{}
 
@@ -101,19 +101,19 @@ func placeShips(random bool) map[int8]byte {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			p.letter = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
-			p.number = int(b[1] % boardSideLength)
-			p.number++ // Convert into a number from 1 to boardSideLength
+			c.x = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
+			c.y = int(b[1] % boardSideLength)
+			c.y++ // Convert into a number from 1 to boardSideLength
 
 			//fmt.Printf("%d, %d", b[0]%boardSideLength, b[1]%boardSideLength)
-			pointToMap(p, ships)
+			coordinateToMap(p, ships)
 		}
 
 	} else {
 		fmt.Printf("Please choose the location of your %d ships (e.g. 'd 3')\n", maxShips)
 		for nShipsPlaced := 0; nShipsPlaced < maxShips; nShipsPlaced++ {
-			fmt.Scanln(&p.letter, &p.number)
-			pointToMap(p, ships)
+			fmt.Scanln(&c.x, &c.y)
+			coordinateToMap(p, ships)
 			printBoard(ships, shots, false)
 		}
 	}
@@ -121,7 +121,7 @@ func placeShips(random bool) map[int8]byte {
 }
 
 func placeShot(ships, shots map[int8]byte, automatic bool) {
-	var p point
+	var p coordinate
 
 	if automatic {
 		b := make([]byte, 2)
@@ -130,15 +130,15 @@ func placeShot(ships, shots map[int8]byte, automatic bool) {
 			fmt.Println("error:", err)
 		}
 
-		p.letter = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
-		p.number = int(b[1] % boardSideLength)
-		p.number++ // Convert into a number from 1 to boardSideLength
+		c.x = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
+		c.y = int(b[1] % boardSideLength)
+		c.y++ // Convert into a number from 1 to boardSideLength
 
-		pointToMap(p, shots)
+		coordinateToMap(p, shots)
 	} else {
 		fmt.Print("Please choose where to shoot (e.g. 'd 2')\n\n")
-		fmt.Scanln(&p.letter, &p.number)
-		pointToMap(p, shots)
+		fmt.Scanln(&c.x, &c.y)
+		coordinateToMap(p, shots)
 		printLegend()
 	}
 }
