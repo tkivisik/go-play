@@ -3,168 +3,278 @@ package games
 import (
 	"crypto/rand"
 	"fmt"
+	"math/big"
 	"os"
+	"strconv"
 	"strings"
 )
 
-// boardSideLength determines the height and width of the game board
-// Letters hold the alphabet
-// maxShips determiens the number of ships per player
-// MaxShots determines the maximum length of a game
 const (
-	boardSideLength uint8  = 4
 	letters         string = "abcdefghijklmnopqrstuvwxyz"
+	boardSideLength uint8  = 4
 	maxShips        int    = 2
 	maxShots        int    = 100
 )
 
-// legend is a dictionary of program logic to map elements
-var legend = map[string]string{
-	"terrain": "~",
-	"ship":    "0",
-	"hit":     "X",
-	"miss":    "*",
+// Legend holds the mapping of a board
+type Legend struct {
+	Terrain string
+	Ship    string
+	Hit     string
+	Miss    string
 }
 
-// printLegend prints the legend on screen
-func printLegend() {
-	fmt.Println("")
-	for k, v := range legend {
-		fmt.Printf("%2s - %s    ", v, k)
-	}
-	fmt.Println("\n Valid coordinate example: 'd 3'")
-	fmt.Print("\n")
+var legend = Legend{
+	Terrain: "~",
+	Ship:    "0",
+	Hit:     "X",
+	Miss:    "*",
 }
 
-// printBoard prints the current battleship board
-func printBoard(ships, shots map[int8]byte, enemy bool) int {
-	hitCount := 0
+func (l *Legend) String() string {
 
-	fmt.Print("\n  ")
-	for column := uint8(0); column < boardSideLength; column++ {
-		fmt.Printf("%2s", letters[column:column+1])
+	var str strings.Builder
+
+	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Terrain", l.Terrain))
+	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Ship", l.Ship))
+	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Hit", l.Hit))
+	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Miss", l.Miss))
+
+	return str.String()
+}
+
+// Coordinate expresses a location on a map as a
+type Coordinate struct {
+	x byte
+	y byte
+}
+
+func (c *Coordinate) String() string {
+	return fmt.Sprintf("Human representation: %c%d", byte(letters[c.x]), c.y+1)
+}
+
+func (c *Coordinate) Read() {
+	var s string
+	for i := 0; i < 100; i++ {
+		fmt.Println("Please enter a coordinate (e.g. 'd3'):")
+		fmt.Scanln(&s)
+		if s == "" {
+			continue
+		}
+		if strings.Contains(letters[boardSideLength:], string(s[0])) {
+			fmt.Printf("Please use letters from %c-%c\n", letters[0], letters[int(boardSideLength)])
+			continue
+		}
+		if strings.Contains("0123456789", string(s[0])) {
+			fmt.Printf("First character must be a letter from %c-%c\n", letters[0], letters[int(boardSideLength)])
+			continue
+		}
+		y, err := strconv.Atoi(s[1:])
+		if err != nil {
+			fmt.Println("Please make sure number follows the letter immediately")
+			continue
+		}
+		if y <= 0 || uint8(y) > boardSideLength {
+			fmt.Printf("Please use numbers from 1-%d\n", boardSideLength)
+			continue
+		}
+		c.x = byte(strings.IndexRune(letters, rune(s[0])))
+		c.y = byte(y)
+		c.y--
+		break
 	}
-	fmt.Println()
+}
+
+type layer struct {
+	layer [boardSideLength]byte
+}
+
+func (l *layer) StringRaw() string {
+	var str strings.Builder
 
 	for row := uint8(0); row < boardSideLength; row++ {
-		fmt.Printf("%2d", row+1)
+		str.WriteString(fmt.Sprintf("%08b\n", l.layer[row]))
+	}
+	return str.String()
+}
+
+func (l *layer) coordinateToOne(c Coordinate) {
+	l.layer[c.y] |= 1 << c.x
+}
+
+// Board is an object for ships and shots
+type Board struct {
+	ships    layer
+	shots    layer
+	hitCount int8
+}
+
+// String returns the current battleship board as string
+func (b *Board) String(enemy bool) string {
+	b.hitCount = 0
+	var str strings.Builder
+
+	str.WriteString("\n  ")
+	for column := uint8(0); column < boardSideLength; column++ {
+		str.WriteString(fmt.Sprintf("%2s", letters[column:column+1]))
+	}
+	str.WriteString("\n")
+
+	for row := uint8(0); row < boardSideLength; row++ {
+
+		str.WriteString(fmt.Sprintf("%2d", row+1))
 		for column := uint8(0); column < boardSideLength; column++ {
-			if ships[int8(row)]&(1<<column) != 0 { // ship found
-				if shots[int8(row)]&(1<<column) != 0 { // shot found
-					fmt.Printf(" %s", legend["hit"])
-					hitCount++
+			coord := Coordinate{column, row}
+			if b.hasShip(coord) {
+				if b.hasShot(coord) {
+					str.WriteString(fmt.Sprintf(" %s", legend.Hit))
+					b.hitCount++
 				} else {
 					if enemy { // hide enemy ships until hit
-						fmt.Printf(" %s", legend["terrain"])
+						str.WriteString(fmt.Sprintf(" %s", legend.Terrain))
 					} else {
-						fmt.Printf(" %s", legend["ship"])
+						str.WriteString(fmt.Sprintf(" %s", legend.Ship))
 					}
 				}
 			} else { // not a ship
-				if shots[int8(row)]&(1<<column) != 0 { // shot found
-					fmt.Printf(" %s", legend["miss"])
+				if b.hasShot(coord) {
+					str.WriteString(fmt.Sprintf(" %s", legend.Miss))
 				} else {
-					fmt.Printf(" %s", legend["terrain"])
+					str.WriteString(fmt.Sprintf(" %s", legend.Terrain))
 				}
 			}
 		}
-		fmt.Println()
+		str.WriteString("\n")
 	}
-	fmt.Println()
-	return hitCount
+	str.WriteString("\n")
+	return str.String()
 }
 
-// coordinateToMap updates the shots map
-func coordinateToMap(p coordinate, landscape map[int8]byte) {
-	c.y--
-	var letterIndex = uint8(strings.Index(letters, c.x))
-	landscape[int8(c.y)] |= 1 << uint8(letterIndex)
+// Print prints the board according to the legend
+func (b *Board) Print(enemy bool) {
+	fmt.Print(b.String(enemy))
 }
 
-// coordinate expresses a location on a map as a
-//type coordinate struct {
-//	x int
-//	y int
-//}
+func (b *Board) hasShip(c Coordinate) bool {
+	return b.ships.layer[c.y]&(1<<c.x) != 0
+}
 
-// PlaceShips guides the player to place its ships
-func placeShips(random bool) map[int8]byte {
-	var p coordinate
-	ships := map[int8]byte{0: uint8(0)}
-	shots := map[int8]byte{}
+func (b *Board) hasShot(c Coordinate) bool {
+	return b.shots.layer[c.y]&(1<<c.x) != 0
+}
+
+func (b *Board) randomLocation() Coordinate {
+	var coord Coordinate
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(boardSideLength*boardSideLength)))
+	if err != nil {
+		panic(err)
+	}
+	n := uint8(nBig.Int64())
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	coord.x = n % boardSideLength
+	coord.y = n / boardSideLength
+
+	return coord
+}
+
+func (b *Board) init(random bool) {
+	var coord Coordinate
 
 	if random {
-		for nShipsPlaced := 0; nShipsPlaced < maxShips; nShipsPlaced++ {
-			b := make([]byte, 2)
-			_, err := rand.Read(b)
-
-			if err != nil {
-				fmt.Println("error:", err)
+		for nShipsPlaced := 0; nShipsPlaced < maxShips; {
+			coord = b.randomLocation()
+			if b.hasShip(coord) == true {
+				continue
 			}
-			c.x = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
-			c.y = int(b[1] % boardSideLength)
-			c.y++ // Convert into a number from 1 to boardSideLength
-
-			//fmt.Printf("%d, %d", b[0]%boardSideLength, b[1]%boardSideLength)
-			coordinateToMap(p, ships)
+			b.ships.coordinateToOne(coord)
+			nShipsPlaced++
 		}
-
 	} else {
-		fmt.Printf("Please choose the location of your %d ships (e.g. 'd 3')\n", maxShips)
-		for nShipsPlaced := 0; nShipsPlaced < maxShips; nShipsPlaced++ {
-			fmt.Scanln(&c.x, &c.y)
-			coordinateToMap(p, ships)
-			printBoard(ships, shots, false)
+		b.Print(false)
+		fmt.Printf("Please select the location for your %d ships.\n", maxShips)
+		for nShipsPlaced := 0; nShipsPlaced < maxShips; {
+			coord.Read()
+			if b.hasShip(coord) == true {
+				fmt.Println("There already is a ship in that location.")
+				continue
+			}
+			b.ships.coordinateToOne(coord)
+			nShipsPlaced++
+			b.Print(false)
 		}
 	}
-	return ships
 }
 
-func placeShot(ships, shots map[int8]byte, automatic bool) {
-	var p coordinate
+func (b *Board) shootThisBoard(automatic bool) {
+	var coord Coordinate
 
-	if automatic {
-		b := make([]byte, 2)
-		_, err := rand.Read(b)
-		if err != nil {
-			fmt.Println("error:", err)
+	if automatic == true {
+		for i := 0; i < 1000; {
+			coord = b.randomLocation()
+			if b.hasShot(coord) {
+				continue
+			}
+			b.shots.coordinateToOne(coord)
+			fmt.Println("ENEMY just shot.")
+			break
 		}
-
-		c.x = letters[int(b[0]%boardSideLength) : int(b[0]%boardSideLength)+1]
-		c.y = int(b[1] % boardSideLength)
-		c.y++ // Convert into a number from 1 to boardSideLength
-
-		coordinateToMap(p, shots)
 	} else {
-		fmt.Print("Please choose where to shoot (e.g. 'd 2')\n\n")
-		fmt.Scanln(&c.x, &c.y)
-		coordinateToMap(p, shots)
-		printLegend()
+		for i := 0; i < 1000; {
+			coord.Read()
+			if b.hasShot(coord) {
+				continue
+			}
+			b.shots.coordinateToOne(coord)
+			break
+		}
 	}
 }
 
 // Battleship is a game to guess the location of ships
 func Battleship() {
-	fmt.Println("***********************")
-	fmt.Println("* BATTLESHIP THE GAME *")
-	fmt.Print("***********************\n\n")
+	var str strings.Builder
+	title := "BATTLESHIP THE GAME"
 
-	var enemyScore, myScore int
-	enemyShips := placeShips(true)
-	enemyShots := map[int8]byte{0: uint8(0)}
-	myShips := placeShips(false)
-	myShots := map[int8]byte{0: uint8(0)}
+	str.WriteString(strings.Repeat("*", len(title)+4))
+	str.WriteString(fmt.Sprintf("\n* %s *\n", title))
+	str.WriteString(fmt.Sprintf("%s\n", strings.Repeat("*", len(title)+4)))
+	str.WriteString(legend.String())
+	fmt.Print(str.String())
+	str.Reset()
+
+	var enemy, me Board
+	var myScore, enemyScore int
+
+	enemy.init(true)
+	me.init(false)
+	me.Print(false)
 
 	for round := int8(0); int(round) < maxShots; round++ {
-		fmt.Println("ENEMY MOVE:")
-		fmt.Println("MY BOARD, ENEMY SHOTS:")
-		placeShot(myShips, enemyShots, true)
-		enemyScore = printBoard(myShips, enemyShots, false)
+		str.WriteString(strings.Repeat("-=|=- ", 10))
+		str.WriteString(fmt.Sprintf("\n Round %2d\n", int(round)+1))
+		fmt.Print(str.String())
+		str.Reset()
 
-		fmt.Println("\t\t\tMY MOVE:")
-		fmt.Println("\t\t\tENEMY BOARD, MY SHOTS:")
-		placeShot(enemyShips, myShots, false)
-		myScore = printBoard(enemyShips, myShots, true)
+		me.shootThisBoard(true)
+		enemy.shootThisBoard(false)
+
+		str.WriteString(strings.Repeat("\n", 20))
+		str.WriteString(fmt.Sprintf(" %s%s\t\t %s", "ME", strings.Repeat(" ", int(boardSideLength)*2), "ENEMY"))
+		fmt.Print(str.String())
+		str.Reset()
+
+		meStrParts := strings.Split(me.String(false), "\n")
+		enemyStrParts := strings.Split(enemy.String(true), "\n")
+		for i := 0; i < len(meStrParts); i++ {
+			fmt.Printf("%s\t\t%s\n", meStrParts[i], enemyStrParts[i])
+		}
+
+		myScore = int(enemy.hitCount)
+		enemyScore = int(me.hitCount)
+
+		fmt.Printf("SCORE :: Me: %d\t\tEnemy:%d\n", myScore, enemyScore)
 
 		if enemyScore >= maxShips {
 			if myScore >= maxShips {
@@ -179,8 +289,5 @@ func Battleship() {
 				os.Exit(0)
 			}
 		}
-
-		fmt.Println("===== ===== ===== ===== ===== ===== ===== ===== ===== =====")
-		fmt.Println("   ===== ===== ===== ===== ===== ===== ===== ===== =====   ")
 	}
 }

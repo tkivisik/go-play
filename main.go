@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/tkivisik/go-play/coordinate"
+	"github.com/tkivisik/go-play/games"
 )
 
 func main() {
@@ -15,15 +15,15 @@ func main() {
 
 	for i := 0; i < *n; i++ {
 		switch *game {
-		/*		case "num":
-					games.NumberGuessing()
-				case "bin":
-					games.BinaryGuessing()
-				case "ship":
-					games.Battleship()*/
+		case "num":
+			games.NumberGuessing()
+		case "bin":
+			games.BinaryGuessing()
+		case "ship":
+			games.Battleship()
 		default:
-			coordinate.CoordinatePart()
 			fmt.Println("Pass a flag -game with either 'num' or 'bin' or 'ship'")
+			games.Battleship()
 		}
 	}
 }
