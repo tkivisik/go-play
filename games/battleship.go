@@ -32,13 +32,12 @@ var legend = Legend{
 }
 
 func (l *Legend) String() string {
-
 	var str strings.Builder
 
-	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Terrain", l.Terrain))
-	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Ship", l.Ship))
-	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Hit", l.Hit))
-	str.WriteString(fmt.Sprintf("%10s '%s'\n", "Miss", l.Miss))
+	fmt.Fprintf(&str, "%10s '%s'\n", "Terrain", l.Terrain)
+	fmt.Fprintf(&str, "%10s '%s'\n", "Ship", l.Ship)
+	fmt.Fprintf(&str, "%10s '%s'\n", "Hit", l.Hit)
+	fmt.Fprintf(&str, "%10s '%s'\n", "Miss", l.Miss)
 
 	return str.String()
 }
@@ -93,7 +92,7 @@ func (l *layer) StringRaw() string {
 	var str strings.Builder
 
 	for row := uint8(0); row < boardSideLength; row++ {
-		str.WriteString(fmt.Sprintf("%08b\n", l.layer[row]))
+		fmt.Fprintf(&str, "%08b\n", l.layer[row])
 	}
 	return str.String()
 }
@@ -116,31 +115,31 @@ func (b *Board) String(enemy bool) string {
 
 	str.WriteString("\n  ")
 	for column := uint8(0); column < boardSideLength; column++ {
-		str.WriteString(fmt.Sprintf("%2s", letters[column:column+1]))
+		fmt.Fprintf(&str, "%2s", letters[column:column+1])
 	}
 	str.WriteString("\n")
 
 	for row := uint8(0); row < boardSideLength; row++ {
 
-		str.WriteString(fmt.Sprintf("%2d", row+1))
+		fmt.Fprintf(&str, "%2d", row+1)
 		for column := uint8(0); column < boardSideLength; column++ {
 			coord := Coordinate{column, row}
 			if b.hasShip(coord) {
 				if b.hasShot(coord) {
-					str.WriteString(fmt.Sprintf(" %s", legend.Hit))
+					fmt.Fprintf(&str, " %s", legend.Hit)
 					b.hitCount++
 				} else {
 					if enemy { // hide enemy ships until hit
-						str.WriteString(fmt.Sprintf(" %s", legend.Terrain))
+						fmt.Fprintf(&str, " %s", legend.Terrain)
 					} else {
-						str.WriteString(fmt.Sprintf(" %s", legend.Ship))
+						fmt.Fprintf(&str, " %s", legend.Ship)
 					}
 				}
 			} else { // not a ship
 				if b.hasShot(coord) {
-					str.WriteString(fmt.Sprintf(" %s", legend.Miss))
+					fmt.Fprintf(&str, " %s", legend.Miss)
 				} else {
-					str.WriteString(fmt.Sprintf(" %s", legend.Terrain))
+					fmt.Fprintf(&str, " %s", legend.Terrain)
 				}
 			}
 		}
@@ -238,8 +237,8 @@ func Battleship() {
 	title := "BATTLESHIP THE GAME"
 
 	str.WriteString(strings.Repeat("*", len(title)+4))
-	str.WriteString(fmt.Sprintf("\n* %s *\n", title))
-	str.WriteString(fmt.Sprintf("%s\n", strings.Repeat("*", len(title)+4)))
+	fmt.Fprintf(&str, "\n* %s *\n", title)
+	fmt.Fprintf(&str, "%s\n", strings.Repeat("*", len(title)+4))
 	str.WriteString(legend.String())
 	fmt.Print(str.String())
 	str.Reset()
@@ -253,7 +252,7 @@ func Battleship() {
 
 	for round := int8(0); int(round) < maxShots; round++ {
 		str.WriteString(strings.Repeat("-=|=- ", 10))
-		str.WriteString(fmt.Sprintf("\n Round %2d\n", int(round)+1))
+		fmt.Fprintf(&str, "\n Round %2d\n", int(round)+1)
 		fmt.Print(str.String())
 		str.Reset()
 
@@ -261,7 +260,7 @@ func Battleship() {
 		enemy.shootThisBoard(false)
 
 		str.WriteString(strings.Repeat("\n", 20))
-		str.WriteString(fmt.Sprintf(" %s%s\t\t %s", "ME", strings.Repeat(" ", int(boardSideLength)*2), "ENEMY"))
+		fmt.Fprintf(&str, " %s%s\t\t %s", "ME", strings.Repeat(" ", int(boardSideLength)*2), "ENEMY")
 		fmt.Print(str.String())
 		str.Reset()
 
