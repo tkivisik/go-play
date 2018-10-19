@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11.1
+
+    working_directory: ~/go-play
+    
+    steps:
+      - checkout
+      - run: go get -v -d ./...
+      - run: go build .
+      # - run: go test -exec ./go-play -v ./...
+      # - run: go test -exec ./go-play -v .
