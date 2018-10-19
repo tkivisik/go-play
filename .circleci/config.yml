@@ -1,14 +1,17 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
   build:
     docker:
+      # specify the version
       - image: circleci/golang:1.11.1
 
-    working_directory: ~/go-play
-    
+    working_directory: /go/src/github.com/tkivisik/go-play
     steps:
       - checkout
-      - run: go get -v -d ./...
-      - run: go build .
-      # - run: go test -exec ./go-play -v ./...
-      # - run: go test -exec ./go-play -v .
+
+      # specify any bash command here prefixed with `run: `
+      - run: go get -v -t -d ./...
+      #- run: go test -v ./...
