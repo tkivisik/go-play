@@ -23,7 +23,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/tkivisik/go-play/server"
+	"github.com/tkivisik/playfulgo/server"
 
 	"github.com/spf13/cobra"
 )

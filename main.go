@@ -22,7 +22,7 @@
 package main
 
 import (
-	"github.com/tkivisik/go-play/cmd"
+	"github.com/tkivisik/playfulgo/cmd"
 )
 
 func main() {
