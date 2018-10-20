@@ -18,30 +18,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// go-play is a package for playful exploration of Golang
-package main
+package cmd
 
 import (
-	"github.com/tkivisik/go-play/cmd"
+	"fmt"
+
+	"github.com/tkivisik/go-play/server"
+
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd.Execute()
-	/*	var n = flag.Int("n", 1, "rounds to play")
-		var game = flag.String("game", "", "game to play (e.g. 'num', 'bin')")
-		flag.Parse()
+// serverCmd represents the server command
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Set up a server",
+	Long:  `Set up a server for playing games`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Server is serving")
+		server.Run()
+	},
+}
 
-		for i := 0; i < *n; i++ {
-			switch *game {
-			case "num":
-				games.NumberGuessing()
-			case "bin":
-				games.BinaryGuessing()
-			case "ship":
-				games.Battleship()
-			default:
-				fmt.Println("Pass a flag -game with either 'num' or 'bin' or 'ship'")
-				games.Battleship()
-			}
-		}*/
+func init() {
+	rootCmd.AddCommand(serverCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -18,30 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// go-play is a package for playful exploration of Golang
-package main
+package server
 
 import (
-	"github.com/tkivisik/go-play/cmd"
+	"fmt"
+	"log"
+	"net/http"
 )
 
-func main() {
-	cmd.Execute()
-	/*	var n = flag.Int("n", 1, "rounds to play")
-		var game = flag.String("game", "", "game to play (e.g. 'num', 'bin')")
-		flag.Parse()
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Pretty awesome path you got here: %s!", r.URL.Path[1:])
+}
 
-		for i := 0; i < *n; i++ {
-			switch *game {
-			case "num":
-				games.NumberGuessing()
-			case "bin":
-				games.BinaryGuessing()
-			case "ship":
-				games.Battleship()
-			default:
-				fmt.Println("Pass a flag -game with either 'num' or 'bin' or 'ship'")
-				games.Battleship()
-			}
-		}*/
+// Run sets up a server
+func Run() {
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
