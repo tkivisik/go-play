@@ -37,22 +37,22 @@ const (
 )
 
 // Legend holds the mapping of a board
-type Legend struct {
+type LegendStruct struct {
 	Terrain string
 	Ship    string
 	Hit     string
 	Miss    string
 }
 
-var legend = Legend{
+var Legend = LegendStruct{
 	Terrain: "~",
 	Ship:    "0",
 	Hit:     "X",
 	Miss:    "*",
 }
 
-// String returns a printable string of a legend
-func (l *Legend) String() string {
+// String returns a printable string of a Legend
+func (l *LegendStruct) String() string {
 	var str strings.Builder
 
 	fmt.Fprintf(&str, "%10s '%s'\n", "Terrain", l.Terrain)
@@ -106,22 +106,20 @@ func (c *Coordinate) Read() {
 	}
 }
 
-type layer struct {
-	layer [boardSideLength]byte
-}
+type layer [boardSideLength]byte
 
 func (l *layer) StringRaw() string {
 	var str strings.Builder
 
 	for row := uint8(0); row < boardSideLength; row++ {
-		fmt.Fprintf(&str, "%08b\n", l.layer[row])
+		fmt.Fprintf(&str, "%08b\n", l[row])
 	}
 	return str.String()
 }
 
 // coordinateToOne turns a Coordinate on a layer to 1
 func (l *layer) coordinateToOne(c Coordinate) {
-	l.layer[c.y] |= 1 << c.x
+	l[c.y] |= 1 << c.x
 }
 
 // Board is an object for ships and shots
@@ -129,6 +127,10 @@ type Board struct {
 	ships    layer
 	shots    layer
 	hitCount int8
+}
+
+func NewBoard() *Board {
+	return &Board{ships: layer{}, shots: layer{}, hitCount: 0}
 }
 
 // String returns the current battleship board as string
@@ -149,20 +151,20 @@ func (b *Board) String(enemy bool) string {
 			coord := Coordinate{column, row}
 			if b.hasShip(coord) {
 				if b.hasShot(coord) {
-					fmt.Fprintf(&str, " %s", legend.Hit)
+					fmt.Fprintf(&str, " %s", Legend.Hit)
 					b.hitCount++
 				} else {
 					if enemy { // hide enemy ships until hit
-						fmt.Fprintf(&str, " %s", legend.Terrain)
+						fmt.Fprintf(&str, " %s", Legend.Terrain)
 					} else {
-						fmt.Fprintf(&str, " %s", legend.Ship)
+						fmt.Fprintf(&str, " %s", Legend.Ship)
 					}
 				}
 			} else { // not a ship
 				if b.hasShot(coord) {
-					fmt.Fprintf(&str, " %s", legend.Miss)
+					fmt.Fprintf(&str, " %s", Legend.Miss)
 				} else {
-					fmt.Fprintf(&str, " %s", legend.Terrain)
+					fmt.Fprintf(&str, " %s", Legend.Terrain)
 				}
 			}
 		}
@@ -172,17 +174,17 @@ func (b *Board) String(enemy bool) string {
 	return str.String()
 }
 
-// Print prints the board according to the legend
+// Print prints the board according to the Legend
 func (b *Board) Print(enemy bool) {
 	fmt.Print(b.String(enemy))
 }
 
 func (b *Board) hasShip(c Coordinate) bool {
-	return b.ships.layer[c.y]&(1<<c.x) != 0
+	return b.ships[c.y]&(1<<c.x) != 0
 }
 
 func (b *Board) hasShot(c Coordinate) bool {
-	return b.shots.layer[c.y]&(1<<c.x) != 0
+	return b.shots[c.y]&(1<<c.x) != 0
 }
 
 func (b *Board) randomLocation() Coordinate {
@@ -262,7 +264,7 @@ func Battleship() {
 	str.WriteString(strings.Repeat("*", len(title)+4))
 	fmt.Fprintf(&str, "\n* %s *\n", title)
 	fmt.Fprintf(&str, "%s\n", strings.Repeat("*", len(title)+4))
-	str.WriteString(legend.String())
+	str.WriteString(Legend.String())
 	fmt.Print(str.String())
 	str.Reset()
 

@@ -1,0 +1,4 @@
+{{ define "boards" }}{{ $friend := index . 0 }}{{ $enemy := index . 1 }}{{ range $i, $value := $friend }}
+    {{ $value }}    {{ index $enemy $i }}{{end}}
+{{end}}
+

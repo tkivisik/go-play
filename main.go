@@ -21,8 +21,41 @@
 // go-play is a package for playful exploration of Golang
 package main
 
-import "github.com/tkivisik/playfulgo/games"
+import (
+	"fmt"
+	"os"
+	"strings"
+	"text/template"
+
+	"github.com/tkivisik/playfulgo/games"
+)
+
+type gameplayData struct {
+	Legend       games.LegendStruct
+	BoardsString [2][]string
+	Boards       []games.Board
+}
 
 func main() {
-	games.Battleship()
+	//	games.Battleship()
+
+	tmpl, err := template.New("legend").ParseFiles("views/layouts/legend.tmpl", "views/layouts/gameplay.tmpl", "views/layouts/boards.tmpl")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	data := gameplayData{
+		Legend:       games.Legend,
+		BoardsString: [2][]string{},
+		Boards:       [](games.Board){*games.NewBoard(), *games.NewBoard()},
+	}
+	data.BoardsString[0] = strings.Split(data.Boards[0].String(false), "\n")
+	data.BoardsString[1] = strings.Split(data.Boards[1].String(true), "\n")
+	err = tmpl.ExecuteTemplate(os.Stdout, "gameplay", data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	/*	fmt.Println("b")
+		fmt.Printf("%+v", tmpl)
+		tmpl.Execute(os.Stdout, nil)*/
 }
