@@ -51,6 +51,7 @@ var legend = Legend{
 	Miss:    "*",
 }
 
+// String returns a printable string of a legend
 func (l *Legend) String() string {
 	var str strings.Builder
 
@@ -62,7 +63,7 @@ func (l *Legend) String() string {
 	return str.String()
 }
 
-// Coordinate expresses a location on a map as a
+// Coordinate expresses a location on a map using x and y
 type Coordinate struct {
 	x byte
 	y byte
@@ -72,6 +73,7 @@ func (c *Coordinate) String() string {
 	return fmt.Sprintf("Human representation: %c%d", byte(letters[c.x]), c.y+1)
 }
 
+// Read prompts the user to enter a Coordinate
 func (c *Coordinate) Read() {
 	var s string
 	for i := 0; i < 100; i++ {
@@ -117,6 +119,7 @@ func (l *layer) StringRaw() string {
 	return str.String()
 }
 
+// coordinateToOne turns a Coordinate on a layer to 1
 func (l *layer) coordinateToOne(c Coordinate) {
 	l.layer[c.y] |= 1 << c.x
 }

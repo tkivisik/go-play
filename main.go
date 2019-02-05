@@ -21,10 +21,8 @@
 // go-play is a package for playful exploration of Golang
 package main
 
-import (
-	"github.com/tkivisik/playfulgo/cmd"
-)
+import "github.com/tkivisik/playfulgo/games"
 
 func main() {
-	cmd.Execute()
+	games.Battleship()
 }
