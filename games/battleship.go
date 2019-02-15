@@ -138,7 +138,7 @@ func (b *Board) String(enemy bool) string {
 	b.hitCount = 0
 	var str strings.Builder
 
-	str.WriteString("\n  ")
+	str.WriteString("  ") // space instead of a row number
 	for column := uint8(0); column < boardSideLength; column++ {
 		fmt.Fprintf(&str, "%2s", letters[column:column+1])
 	}
@@ -170,7 +170,6 @@ func (b *Board) String(enemy bool) string {
 		}
 		str.WriteString("\n")
 	}
-	str.WriteString("\n")
 	return str.String()
 }
 

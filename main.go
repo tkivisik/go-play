@@ -25,7 +25,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
+
+	"github.com/tkivisik/playfulgo/controllers"
 
 	"github.com/tkivisik/playfulgo/games"
 )
@@ -38,11 +39,12 @@ type gameplayData struct {
 
 func main() {
 	//	games.Battleship()
+	gameplayC := controllers.NewGameplays()
 
-	tmpl, err := template.New("legend").ParseFiles("views/layouts/legend.tmpl", "views/layouts/gameplay.tmpl", "views/layouts/boards.tmpl")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// tmpl, err := template.New("legend").ParseFiles("views/layouts/legend.tmpl", "views/layouts/gameplay.tmpl", "views/layouts/boards.tmpl", "views/layouts/footer.tmpl")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	data := gameplayData{
 		Legend:       games.Legend,
@@ -51,7 +53,8 @@ func main() {
 	}
 	data.BoardsString[0] = strings.Split(data.Boards[0].String(false), "\n")
 	data.BoardsString[1] = strings.Split(data.Boards[1].String(true), "\n")
-	err = tmpl.ExecuteTemplate(os.Stdout, "gameplay", data)
+	err := gameplayC.NewGameplay.Template.Execute(os.Stdout, data)
+	//err = tmpl.ExecuteTemplate(os.Stdout, "gameplay", data)
 	if err != nil {
 		fmt.Println(err)
 	}
