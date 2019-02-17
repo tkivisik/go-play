@@ -185,6 +185,30 @@ func (b *Board) hasShot(c Coordinate) bool {
 	return b.shots[c.y]&(1<<c.x) != 0
 }
 
+func (b *Board) isSurroundedByWater(c Coordinate) bool {
+	for row := -1; row < 2; row++ {
+		if int(c.y)+row < 0 {
+			continue
+		}
+		if c.y+byte(row) >= boardSideLength {
+			return true
+		}
+		for col := -1; col < 2; col++ {
+			if int(c.x)+col < 0 {
+				continue
+			}
+			if c.x+byte(col) >= boardSideLength {
+				continue
+			}
+
+			if b.ships[c.y+byte(row)]&(1<<(c.x+byte(col))) != 0 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (b *Board) randomLocation() Coordinate {
 	var coord Coordinate
 	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(boardSideLength*boardSideLength)))
@@ -210,6 +234,9 @@ func (b *Board) AddShipBy(random bool) {
 			if b.hasShip(coord) == true {
 				continue
 			}
+			if b.isSurroundedByWater(coord) == false {
+				continue
+			}
 			b.ships.coordinateToOne(coord)
 			break
 		}
@@ -218,6 +245,10 @@ func (b *Board) AddShipBy(random bool) {
 			coord.Read()
 			if b.hasShip(coord) == true {
 				fmt.Println("There already is a ship in that location.")
+				continue
+			}
+			if b.isSurroundedByWater(coord) == false {
+				fmt.Println("Ships must have space between them.")
 				continue
 			}
 			b.ships.coordinateToOne(coord)
