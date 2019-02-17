@@ -24,7 +24,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -32,7 +31,7 @@ import (
 const (
 	letters         string = "abcdefghijklmnopqrstuvwxyz"
 	boardSideLength uint8  = 4
-	maxShips        int    = 2
+	MaxShips        int    = 2
 	maxShots        int    = 100
 )
 
@@ -202,30 +201,27 @@ func (b *Board) randomLocation() Coordinate {
 	return coord
 }
 
-func (b *Board) Init(random bool) {
+func (b *Board) AddShipBy(random bool) {
 	var coord Coordinate
 
 	if random {
-		for nShipsPlaced := 0; nShipsPlaced < maxShips; {
+		for {
 			coord = b.randomLocation()
 			if b.hasShip(coord) == true {
 				continue
 			}
 			b.ships.coordinateToOne(coord)
-			nShipsPlaced++
+			break
 		}
 	} else {
-		b.Print(false)
-		fmt.Printf("Please select the location for your %d ships.\n", maxShips)
-		for nShipsPlaced := 0; nShipsPlaced < maxShips; {
+		for {
 			coord.Read()
 			if b.hasShip(coord) == true {
 				fmt.Println("There already is a ship in that location.")
 				continue
 			}
 			b.ships.coordinateToOne(coord)
-			nShipsPlaced++
-			b.Print(false)
+			break
 		}
 	}
 }
@@ -251,66 +247,6 @@ func (b *Board) ShootThisBoard(automatic bool) {
 			}
 			b.shots.coordinateToOne(coord)
 			break
-		}
-	}
-}
-
-// Battleship is a game to guess the location of ships
-func Battleship() {
-	var str strings.Builder
-	title := "BATTLESHIP THE GAME"
-
-	str.WriteString(strings.Repeat("*", len(title)+4))
-	fmt.Fprintf(&str, "\n* %s *\n", title)
-	fmt.Fprintf(&str, "%s\n", strings.Repeat("*", len(title)+4))
-	str.WriteString(Legend.String())
-	fmt.Print(str.String())
-	str.Reset()
-
-	var enemy, me Board
-	var myScore, enemyScore int
-
-	enemy.Init(true)
-	me.Init(false)
-	me.Print(false)
-
-	for round := int8(0); int(round) < maxShots; round++ {
-		str.WriteString(strings.Repeat("-=|=- ", 10))
-		fmt.Fprintf(&str, "\n Round %2d\n", int(round)+1)
-		fmt.Print(str.String())
-		str.Reset()
-
-		me.ShootThisBoard(true)
-		enemy.ShootThisBoard(false)
-
-		str.WriteString(strings.Repeat("\n", 20))
-		fmt.Fprintf(&str, " %s%s\t\t %s", "ME", strings.Repeat(" ", int(boardSideLength)*2), "ENEMY")
-		fmt.Print(str.String())
-		str.Reset()
-
-		meStrParts := strings.Split(me.String(false), "\n")
-		enemyStrParts := strings.Split(enemy.String(true), "\n")
-		for i := 0; i < len(meStrParts); i++ {
-			fmt.Printf("%s\t\t%s\n", meStrParts[i], enemyStrParts[i])
-		}
-
-		myScore = int(enemy.HitCount)
-		enemyScore = int(me.HitCount)
-
-		fmt.Printf("SCORE :: Me: %d\t\tEnemy:%d\n", myScore, enemyScore)
-
-		if enemyScore >= maxShips {
-			if myScore >= maxShips {
-				fmt.Println("IT'S A DRAW, GAME OVER, WELL DONE")
-			} else {
-				fmt.Println("GAME OVER, YOU LOST")
-			}
-			os.Exit(0)
-		} else {
-			if myScore >= maxShips {
-				fmt.Println("GAME OVER. YOU WON !!!")
-				os.Exit(0)
-			}
 		}
 	}
 }
