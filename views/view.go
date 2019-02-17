@@ -1,6 +1,8 @@
 package views
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 	"text/template"
 )
@@ -39,5 +41,13 @@ func NewView(layout string, files ...string) *View {
 	return &View{
 		Template: t,
 		Layout:   layout,
+	}
+}
+
+// Render builds a template using data
+func (v *View) Render(data interface{}) {
+	err := v.Template.ExecuteTemplate(os.Stdout, v.Layout, data)
+	if err != nil {
+		fmt.Println(err)
 	}
 }

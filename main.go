@@ -22,43 +22,21 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/tkivisik/playfulgo/controllers"
 
 	"github.com/tkivisik/playfulgo/games"
 )
 
 type gameplayData struct {
-	Legend       games.LegendStruct
-	BoardsString [2][]string
-	Boards       []games.Board
+	Legend      games.LegendStruct
+	BoardsSlice [2][]string
+	Prompt      string
 }
 
 func main() {
 	//	games.Battleship()
 	gameplayC := controllers.NewGameplays()
+	gameplayC.InitBoards()
+	gameplayC.Play()
 
-	// tmpl, err := template.New("legend").ParseFiles("views/layouts/legend.tmpl", "views/layouts/gameplay.tmpl", "views/layouts/boards.tmpl", "views/layouts/footer.tmpl")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	data := gameplayData{
-		Legend:       games.Legend,
-		BoardsString: [2][]string{},
-		Boards:       [](games.Board){*games.NewBoard(), *games.NewBoard()},
-	}
-	data.BoardsString[0] = strings.Split(data.Boards[0].String(false), "\n")
-	data.BoardsString[1] = strings.Split(data.Boards[1].String(true), "\n")
-	err := gameplayC.NewGameplay.Template.Execute(os.Stdout, data)
-	//err = tmpl.ExecuteTemplate(os.Stdout, "gameplay", data)
-	if err != nil {
-		fmt.Println(err)
-	}
-	/*	fmt.Println("b")
-		fmt.Printf("%+v", tmpl)
-		tmpl.Execute(os.Stdout, nil)*/
 }

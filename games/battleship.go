@@ -126,16 +126,16 @@ func (l *layer) coordinateToOne(c Coordinate) {
 type Board struct {
 	ships    layer
 	shots    layer
-	hitCount int8
+	HitCount int8
 }
 
 func NewBoard() *Board {
-	return &Board{ships: layer{}, shots: layer{}, hitCount: 0}
+	return &Board{ships: layer{}, shots: layer{}, HitCount: 0}
 }
 
 // String returns the current battleship board as string
 func (b *Board) String(enemy bool) string {
-	b.hitCount = 0
+	b.HitCount = 0
 	var str strings.Builder
 
 	str.WriteString("  ") // space instead of a row number
@@ -152,7 +152,7 @@ func (b *Board) String(enemy bool) string {
 			if b.hasShip(coord) {
 				if b.hasShot(coord) {
 					fmt.Fprintf(&str, " %s", Legend.Hit)
-					b.hitCount++
+					b.HitCount++
 				} else {
 					if enemy { // hide enemy ships until hit
 						fmt.Fprintf(&str, " %s", Legend.Terrain)
@@ -202,7 +202,7 @@ func (b *Board) randomLocation() Coordinate {
 	return coord
 }
 
-func (b *Board) init(random bool) {
+func (b *Board) Init(random bool) {
 	var coord Coordinate
 
 	if random {
@@ -230,7 +230,7 @@ func (b *Board) init(random bool) {
 	}
 }
 
-func (b *Board) shootThisBoard(automatic bool) {
+func (b *Board) ShootThisBoard(automatic bool) {
 	var coord Coordinate
 
 	if automatic == true {
@@ -270,8 +270,8 @@ func Battleship() {
 	var enemy, me Board
 	var myScore, enemyScore int
 
-	enemy.init(true)
-	me.init(false)
+	enemy.Init(true)
+	me.Init(false)
 	me.Print(false)
 
 	for round := int8(0); int(round) < maxShots; round++ {
@@ -280,8 +280,8 @@ func Battleship() {
 		fmt.Print(str.String())
 		str.Reset()
 
-		me.shootThisBoard(true)
-		enemy.shootThisBoard(false)
+		me.ShootThisBoard(true)
+		enemy.ShootThisBoard(false)
 
 		str.WriteString(strings.Repeat("\n", 20))
 		fmt.Fprintf(&str, " %s%s\t\t %s", "ME", strings.Repeat(" ", int(boardSideLength)*2), "ENEMY")
@@ -294,8 +294,8 @@ func Battleship() {
 			fmt.Printf("%s\t\t%s\n", meStrParts[i], enemyStrParts[i])
 		}
 
-		myScore = int(enemy.hitCount)
-		enemyScore = int(me.hitCount)
+		myScore = int(enemy.HitCount)
+		enemyScore = int(me.HitCount)
 
 		fmt.Printf("SCORE :: Me: %d\t\tEnemy:%d\n", myScore, enemyScore)
 
