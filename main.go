@@ -21,8 +21,22 @@
 // go-play is a package for playful exploration of Golang
 package main
 
-import "github.com/tkivisik/playfulgo/games"
+import (
+	"github.com/tkivisik/playfulgo/controllers"
+
+	"github.com/tkivisik/playfulgo/games"
+)
+
+type gameplayData struct {
+	Legend      games.LegendStruct
+	BoardsSlice [2][]string
+	Prompt      string
+}
 
 func main() {
-	games.Battleship()
+	//	games.Battleship()
+	gameplayC := controllers.NewGameplays()
+	gameplayC.InitBoards()
+	gameplayC.Play()
+
 }

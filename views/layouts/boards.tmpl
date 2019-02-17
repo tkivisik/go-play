@@ -1,0 +1,3 @@
+{{ define "boards" }}      FRIENDLY
+{{ $hostile := .HostileBoardString}}{{ range $i, $friend := .FriendlyBoardString }}    {{ $friend }}    {{ index $hostile $i }}
+{{end}}{{end}}
